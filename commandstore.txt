@@ -1,0 +1,15 @@
+warp ~
+warp ~
+peek .
+warp ..
+sleep 5 &
+sleep 3 &
+echo hello
+sleep 4 &
+sleep 3 &
+sleep 4 &
+sleep 5 &
+sleep 2 &
+seek -f -d peek .
+seek -f -e peek .
+seek -f -e main .
