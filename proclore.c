@@ -5,9 +5,9 @@
     if(current!=-1){
        pid=current;
     }else{
-       pid==atoi(str_pid);
+       pid=atoi(str_pid);
     }
-    
+    printf("%d\n",pid);
     char path[300];
     snprintf(path,300,"/proc/%d/status",pid);
     FILE* f=fopen(path,"r");
@@ -61,6 +61,6 @@
      printf("Process Group :%d\n",gpid);
      printf("Virtual memory :%s\n",size_file);
      printf("executable Path :%s\n",executable_size);
-
+fclose(f);
 return;
 }

@@ -1,16 +1,40 @@
 #include "headers.h"
 
 void runcommand(Queue q,char**comm_saved,char*input,char*store_command){
-int store_comm_cond=1;
+        // int store_comm_cond=1;
         int del_count=0;
-        input[strcspn(input,"\n")] = '\0';
+        // input[strcspn(input,"\n")] = '\0';
         int input_len=strlen(input);
         char del_used[100];
+        int pipe_cond=0;
+        int redirection_cond=0;
+        for(int i=0;i<input_len;i++){
+            if(input[i]=='|'){
+                pipe_cond=1;
+                break;
+            }
+
+            if(input[i]=='>' || input[i]=='<'){
+                redirection_cond=1;
+            }
+        }
+        
+        if(pipe_cond==1){
+            runcommand_pipe(q,comm_saved,input,store_command);
+            return;
+        }
+
+        if(pipe_cond==0 && redirection_cond==1){
+            runcommand_io(q,comm_saved,input,store_command);
+            return;
+        }       
+        
         for(int i=0;i<input_len;i++){
              if(input[i]=='&' || input[i]==';'){
                    del_used[del_count++]=input[i];  
              }
         }
+
         if(!(input[input_len-1]=='&' || input[input_len-1]==';')){
             del_used[del_count++]='0';
         }
@@ -24,13 +48,13 @@ int store_comm_cond=1;
             commandlist[i]=(char*)malloc(sizeof(char)*(r+2));
             strcpy(commandlist[i],tok);
             
-            
             i++;
             tok=strtok(NULL,delimiter);
         }
 
         int j=0;
         while(j<del_count){
+
             int r=strlen(commandlist[j]);
             char* copy_comm=(char*)malloc(sizeof(char)*(r+1));
             strcpy(copy_comm,commandlist[j]); 
@@ -140,14 +164,15 @@ int store_comm_cond=1;
                     delete();
                     store_comm_cond=0;
                 }else if( option==3){
-                    store_comm_cond=0;
+                    // printf("Hellobois\n");
                     int num=atoi(num_str);
-             
+                      
                     if(num>0 && num<15){
                         passevents_execute(num,comm_saved,q);
                     }else{
                         printf("Can't use pastevents execute\n");
                     }
+                    store_comm_cond=0;
                 }else{
                     printf("Not a command\n");
                 }
@@ -160,7 +185,7 @@ int store_comm_cond=1;
                     process(tok_ele,-1);
                     tok_ele=strtok(NULL," \t");
                  }
-                 if(condition){
+                 if(condition==1){
                     int p=getpid();
                     process(" ",p);
                  }
@@ -254,15 +279,65 @@ int store_comm_cond=1;
                 }
                
               
-            }
-            
-            // if(not_comm){
-            //     printf("Command Not Found:%s\n",commandlist[j]);
-            // }else{
-            //     //store command
-            // }
+            }else if(strcmp("ping",tok_ele)==0){
                 tok_ele=strtok(NULL," \t");
-            // }
+                if(tok_ele==NULL){
+                    printf("No pid provided\n");
+                    break;
+                }
+                int pid=atoi(tok_ele);
+                tok_ele=strtok(NULL," \t");
+                if(tok_ele==NULL){
+                    printf("No Signal Number provided\n");
+                    break;
+                }
+                int signal_num=atoi(tok_ele)%32;
+                int w=kill_process_pid(pid,signal_num);
+                not_comm=0;
+            }else if(strcmp("activities",tok_ele)==0){
+                activities(q);
+                not_comm=0;
+            }else if(strcmp("fg",tok_ele)==0){
+                tok_ele=strtok(NULL," \t");
+                if(tok_ele==NULL){
+                    printf("No pid given\n");
+                    break;
+                }
+                int id=atoi(tok_ele);
+                fgandbg(id,q,1);
+                not_comm=0;
+            }else if(strcmp("bg",tok_ele)==0){
+                tok_ele=strtok(NULL," \t");
+                if(tok_ele==NULL){
+                    printf("No pid given\n");
+                    break;
+                }
+                int id=atoi(tok_ele);
+                fgandbg(id,q,0);
+                not_comm=0;
+            }else if(strcmp("neonate",tok_ele)==0){
+                 tok_ele=strtok(NULL," \t");
+                 tok_ele=strtok(NULL," \t");
+                 if(tok_ele==NULL){
+                    printf("No pid given\n");
+                    break;
+                }
+                int time=atoi(tok_ele);
+                neonate(time);
+                not_comm=0;
+            }else if(strcmp("iMan",tok_ele)==0){
+                tok_ele=strtok(NULL," \t");
+                if(tok_ele==NULL){
+                    printf("No Command Entered\n");
+                    break;
+                }
+                man_func(tok_ele);
+                not_comm=0;
+            }
+             
+           
+                tok_ele=strtok(NULL," \t");
+             
 
         }
          
@@ -276,15 +351,60 @@ int store_comm_cond=1;
             fore_back(commandlist[j],cond,q);
          }
             j++;
+        
     }
-     if(store_comm_cond){
+        
+    return;
+        }
+
+
+void runcommand_tok(Queue q,char**comm_saved,char*input,char*store_command){
+    
+        int del_count=0;
+        input[strcspn(input,"\n")] = '\0';
+        int input_len=strlen(input);
+        char delimiter[]=";";
+        int count=0;
+        for(int i=0;i<input_len;i++){
+            if(input[i]==';'){
+                count++;
+            }
+        }
+
+        int j=0;
+        char**commands_list_tok=(char**)malloc(sizeof(char*)*(count+1));
+        char*tok=strtok(input,delimiter);
+        while(tok!=NULL){
+            int r=strlen(tok);
+            commands_list_tok[j]=(char*)malloc(sizeof(char)*(r+10));
+            
+            strcpy(commands_list_tok[j],tok);
+            j++;
+            tok=strtok(NULL,delimiter);
+        }
+
+        for(int h=0;h<j;h++){
+             int len=strlen(commands_list_tok[h]);
+             char* copyinput=(char*)malloc(sizeof(char)*(len+1));
+             strcpy(copyinput,commands_list_tok[h]);
+             runcommand(q,comm_saved,copyinput,commands_list_tok[h]);
+             free(copyinput);
+        }
+
+        for(int l=0;l<count+1;l++){
+            free(commands_list_tok[l]);
+        }
+        free(commands_list_tok);
+        
+        if(store_comm_cond){
         store(store_command,comm_saved);
         if(comm_count==15){
             format_change(comm_saved);
         }
-     }
-     
-     
-    
-    return;
+        }else{
+            store_comm_cond=1;
+        }
+
+     return;
+
 }

@@ -1,9 +1,28 @@
 #include "headers.h"
 
+void ctrlC(int signal){
+    if(signal==SIGINT){
+        if(foreground_running!=0){
+            int r=kill(foreground_running,SIGINT);
+            foreground_running=0;
+        }
+    }
+}
+
+void sighandler(int sig_num)
+{
+    if(foreground_running!=0){
+        kill(foreground_running,SIGTSTP);
+        foreground_running=0;
+    }
+}
+
 int main()
 {
     // Keep accepting commands
     char curr_path[500];
+    signal(SIGINT,ctrlC);
+    signal(SIGTSTP,sighandler);
     if(getcwd(curr_path,500)==NULL){
         perror("getcwd");
     }else{
@@ -14,6 +33,8 @@ int main()
         printf("File does not exist\n");
     }
     fclose(A);
+    ori_stdin_fd = dup(STDIN_FILENO);
+    ori_stdout_fd = dup(STDOUT_FILENO);
     snprintf(file_path,350,"%s/commandstore.txt",initial_dir);
     char*comm_saved[15];
     for(int l=0;l<15;l++){
@@ -34,29 +55,44 @@ int main()
         }
         char input[4096];
         char store_command[4096];
-        fgets(input,4096,stdin);
+        if(fgets(input,4096,stdin)==NULL){
+            kill(0,SIGTERM);
+        }
         int len_input=strlen(input);
+        if(strcmp(input,"exit\n")==0){
+            break;
+        }
         strcpy(store_command,input);
-         Queue temp=q->next;
+        Queue temp=q->next;
         while(temp!=NULL){
+            if(temp->fg_or_bg==0){
+                temp=temp->next;
+                continue;
+            }
             int pid=temp->element;
+            // if(temp->fg_or_bg==1){
+            
             int status;
             int result = waitpid(pid, &status,WNOHANG);
             if (result == -1) {
+                printf("Error:%d\n",pid);
                 perror("waitpid");
-                return 1;
+               
             } else if (result == 0) {
             } else {
+                // fg_or_bg=1 for background
+               
                 if (WIFEXITED(status)) {
                     printf("%s exited normally(%d)\n",temp->str,pid);
                 }else if (WIFSIGNALED(status)) {
                     printf("%s exited abnormally(%d)\n",temp->str,pid);
                 }
+              
                 find_delete(q,pid);
             }
             temp=temp->next;
         }
-        runcommand(q,comm_saved,input,store_command);
+        runcommand_tok(q,comm_saved,input,store_command);
     
     }
     return 0;

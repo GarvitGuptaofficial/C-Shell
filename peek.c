@@ -33,18 +33,13 @@ void information_about_file(struct dirent * dir_info,char *dir_path) {
 // blue -- directories
 
 
-  if( dir_info->d_type==DT_DIR){
-    printf("\033[34m");
-    printf(" %s\n",dir_info->d_name);
-    printf("\033[0m");
+  if(S_ISDIR(fileinfo.st_mode)){
+    // printf("dir\n");
+    printf(COLOR_BLUE"%s\n"COLOR_RESET,dir_info->d_name);
   }else if(fileinfo.st_mode & S_IXUSR){
-    printf("\033[32m");  
-    printf(" %s\n",dir_info->d_name);
-    printf("\033[0m");
-  }else if( dir_info->d_type==DT_REG){
-    printf("\033[37m");  
-    printf(" %s\n",dir_info->d_name);
-    printf("\033[0m");  
+    printf(COLOR_GREEN"%s\n"COLOR_RESET,dir_info->d_name);
+  }else{
+    printf("%s\n",dir_info->d_name);
   }
 }
 

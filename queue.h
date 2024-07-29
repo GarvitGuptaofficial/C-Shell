@@ -9,13 +9,14 @@
 typedef struct queue* Queue;
 
 struct queue {
+int fg_or_bg;
 int element;
 char * str;
 Queue next;
 Queue rear;
 };
 
-void Push(Queue head,int val,char*com);
+void Push(Queue head,int val,char*com,int fg_or_bg);
 int Pop(Queue head);
 void find_delete(Queue head,int e);
 #endif
