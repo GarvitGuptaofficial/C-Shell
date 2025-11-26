@@ -131,3 +131,13 @@ PART A:-
 
 9. Not implemented exit command and storing it.
 
+10. Background Process after again running through 'bg' does not print its PID.
+
+11. In Proclore if process status in proc status directory is 'S' then showing it 'S' but in activities if this status is "S" then showing it Running.
+
+12. Assumed ZOMBIE PROCESS as terminated.
+
+13. Commands such as sed '/ //g' will not work .
+
+14. Not able to coloring in peek but works in peek -l and peek -l -a.
+

@@ -102,25 +102,6 @@ void store(char* command,char**ptr){
     }
 
 
-void  passevents_execute(int index,char**ptr,Queue q){
-    if(index>comm_count){
-        printf("Wrong Index\n");
-        return;
-    } 
-    
-    
-    int r=comm_count;
-    int cal_index=r-index;
-    store(ptr[cal_index],ptr);
-    int len=strlen(ptr[cal_index]);
-    char* input=(char*)malloc(sizeof(char)* (len+1));
-    char* sinput=(char*)malloc(sizeof(char)* (len+1));
-    strcpy(input,ptr[cal_index]);
-    strcpy(sinput,ptr[cal_index]);
-    runcommand(q,ptr,input,sinput);
-    return;
-}
-
 void format_change(char**ptr){
         FILE*file = fopen(file_path, "w"); 
         if (file == NULL) {
@@ -133,3 +114,26 @@ void format_change(char**ptr){
         fclose(file);
         return;
 }
+
+void  passevents_execute(int index,char**ptr,Queue q){
+    if(index>comm_count){
+        printf("Wrong Index\n");
+        return;
+    } 
+    
+    int r=comm_count;
+    int cal_index=r-index;
+    store(ptr[cal_index],ptr);
+    int len=strlen(ptr[cal_index]);
+    char* input=(char*)malloc(sizeof(char)* (len+1));
+    char* sinput=(char*)malloc(sizeof(char)* (len+1));
+    strcpy(input,ptr[cal_index]);
+    strcpy(sinput,ptr[cal_index]);
+    store(input,ptr);
+        if(comm_count==15){
+            format_change(ptr);
+        }
+    runcommand_tok(q,ptr,input,sinput);
+    return;
+}
+

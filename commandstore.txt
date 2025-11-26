@@ -1,15 +1,15 @@
-warp ~
-warp ~
-peek .
-warp ..
-sleep 5 &
-sleep 3 &
-echo hello
-sleep 4 &
-sleep 3 &
-sleep 4 &
-sleep 5 &
-sleep 2 &
-seek -f -d peek .
-seek -f -e peek .
-seek -f -e main .
+ps
+activities
+fg 14050
+activities
+ps
+sleep 30
+ps
+activities
+echo "hello" | wc
+peek > test.txt
+peek
+peek > test.txt
+peek
+peek -l
+peek

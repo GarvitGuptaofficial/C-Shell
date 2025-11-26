@@ -1,13 +1,14 @@
 #include "queue.h"
 
  
-void Push(Queue head,int val,char*com){
+void Push(Queue head,int val,char*com,int fg_or_bg){
       Queue f=(Queue)malloc(sizeof(struct queue));
       f->element=val;
       f->next=NULL;
       int len=strlen(com);
       f->str=(char*)malloc(sizeof(char)*len);
       strcpy(f->str,com);
+      f->fg_or_bg=fg_or_bg;
 
       if(head->next==NULL){
        head->next=f;
